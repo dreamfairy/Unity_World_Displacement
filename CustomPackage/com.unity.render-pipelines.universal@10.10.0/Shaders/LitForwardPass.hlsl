@@ -50,7 +50,7 @@ struct Varyings
 #endif
 
 #if defined(GLOBAL_DISSOLVE)
-    float2 dissolveUV               : TEXCOORD9;
+    float4 dissolveUV               : TEXCOORD9;
 #endif
 
     float4 positionCS               : SV_POSITION;

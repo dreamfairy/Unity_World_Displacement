@@ -97,6 +97,13 @@ Shader "Universal Render Pipeline/Lit"
             ZWrite[_ZWrite]
             Cull[_Cull]
 
+            Stencil
+            {
+                Ref 1
+                Comp Always
+                Pass replace
+            }
+
             HLSLPROGRAM
             #pragma exclude_renderers gles gles3 glcore
             #pragma target 4.5
@@ -151,6 +158,7 @@ Shader "Universal Render Pipeline/Lit"
 
         #if defined(GLOBAL_DISSOLVE)
                 float4 _DissolveTex_ST;
+                float4 _DissolveCenter;
                 half _Clip;
                 TEXTURE2D(_DissolveTex); SAMPLER(sampler_DissolveTex);
                 TEXTURE2D(_RampTex); SAMPLER(sampler_RampTex);
@@ -209,6 +217,7 @@ Shader "Universal Render Pipeline/Lit"
                 output.positionCS = vertexInput.positionCS;
 #if defined(GLOBAL_DISSOLVE)
                 output.dissolveUV.xy = TRANSFORM_TEX(input.texcoord.xy, _DissolveTex);
+                //output.dissolveUV.zw = float2(distance(vertexInput.positionWS.xyz, _DissolveCenter.xyz), _DissolveCenter.w);
 #endif
 
                 return output;
@@ -241,9 +250,11 @@ Shader "Universal Render Pipeline/Lit"
 
 #if defined(GLOBAL_DISSOLVE)
                 half4 dissolveTex = SAMPLE_TEXTURE2D(_DissolveTex, sampler_DissolveTex, input.dissolveUV.xy);
-                clip(dissolveTex.r - _Clip);
-                half dissolveValue = saturate((dissolveTex.r - _Clip) / (_Clip + 0.1 - _Clip));
-                half4 rampTex = SAMPLE_TEXTURE2D(_RampTex, sampler_DissolveTex, dissolveValue);
+                float2 dissolveData = float2(distance(input.positionWS.xyz, _DissolveCenter.xyz) + dissolveTex.x*5, _DissolveCenter.w);
+
+                clip(dissolveData.x - dissolveData.y);
+                half dissolveValue = saturate((dissolveData.x - dissolveData.y) / (dissolveData.x + 0.1 - dissolveData.y));
+                half4 rampTex = SAMPLE_TEXTURE2D(_RampTex, sampler_RampTex, dissolveValue);
                 color += rampTex;
 #endif
 

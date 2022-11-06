@@ -17,6 +17,13 @@
 			Name "WaterShading"
 			Tags{"LightMode" = "UniversalForward"}
 
+			Stencil
+			{
+				Ref 1
+				Comp NotEqual
+				Pass Keep
+			}
+
 			HLSLPROGRAM
 			#pragma prefer_hlslcc gles
 			/////////////////SHADER FEATURES//////////////////
